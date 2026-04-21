@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Регистрация</h2>
+<form method="post">
+    {{ form.hidden_tag() }}
+    <p>{{ form.email.label }}<br>{{ form.email(size=32) }}</p>
+    <p>{{ form.name.label }}<br>{{ form.name(size=32) }}</p>
+    <p>{{ form.password.label }}<br>{{ form.password(size=32) }}</p>
+    <p>{{ form.password_again.label }}<br>{{ form.password_again(size=32) }}</p>
+    <p>{{ form.submit() }}</p>
+    {% if message %}
+        <p style="color: red;">{{ message }}</p>
+    {% endif %}
+</form>
+{% endblock %}
