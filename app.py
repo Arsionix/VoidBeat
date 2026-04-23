@@ -1,8 +1,9 @@
 import os
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from data import db_session
 from data.users import User
+from data.tracks import Track
 from forms.user import RegisterForm, LoginForm
 
 app = Flask(__name__)
@@ -19,9 +20,25 @@ def load_user(user_id):
     return db_sess.get(User, user_id)
 
 
+@app.route('/api/tracks')
+def api_tracks():
+    db_sess = db_session.create_session()
+    tracks = db_sess.query(Track).all()
+    result = []
+    for t in tracks:
+        result.append({
+            'id': t.id,
+            'title': t.title,
+            'artist': t.artist,
+            'file_url': t.file_url,
+            'duration': t.duration
+        })
+    return jsonify(result)
+
+
 @app.route('/')
 def index():
-    return render_template('base.html')
+    return render_template('index.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
