@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>VoidBeat</h1>
+<h2>Список треков</h2>
+
+<div id="track-list"></div>
+
+<hr>
+
+<h3>Сейчас играет:</h3>
+<div id="current-track">—</div>
+
+<audio id="player" controls style="width: 300px;"></audio>
+
+<script>
+    fetch('/api/tracks')
+        .then(response => response.json())
+        .then(tracks => {
+            const container = document.getElementById('track-list');
+            
+            tracks.forEach(track => {
+                const button = document.createElement('button');
+                button.textContent = `${track.title} - ${track.artist}`;
+                button.style.display = 'block';
+                button.style.margin = '5px';
+                button.style.padding = '10px';
+                button.onclick = () => {
+                    const player = document.getElementById('player');
+                    player.src = track.file_url;
+                    player.play();
+                    document.getElementById('current-track').textContent = track.title;
+                };
+                container.appendChild(button);
+            });
+        });
+</script>
+{% endblock %}
