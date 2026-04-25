@@ -5,6 +5,7 @@ from data import db_session
 from data.users import User
 from data.tracks import Track
 from data.ratings import Rating
+from data.playlists import Playlist
 from forms.user import RegisterForm, LoginForm
 
 app = Flask(__name__)
@@ -72,6 +73,94 @@ def rate_track():
     return jsonify({'ok': True})
 
 
+@app.route('/api/playlists')
+@login_required
+def get_playlists():
+    db_sess = db_session.create_session()
+    playlists = db_sess.query(Playlist).filter_by(
+        user_id=current_user.id).all()
+    db_sess.close()
+    return jsonify([{'id': p.id, 'name': p.name} for p in playlists])
+
+
+@app.route('/api/playlists', methods=['POST'])
+@login_required
+def create_playlist():
+    data = request.get_json()
+    db_sess = db_session.create_session()
+    playlist = Playlist(name=data['name'], user_id=current_user.id)
+    db_sess.add(playlist)
+    db_sess.commit()
+
+    result = {'id': playlist.id, 'name': playlist.name}
+
+    db_sess.close()
+
+    return jsonify(result)
+
+
+@app.route('/api/playlists/<int:playlist_id>/tracks', methods=['POST'])
+@login_required
+def add_to_playlist(playlist_id):
+    data = request.get_json()
+    db_sess = db_session.create_session()
+
+    playlist = db_sess.query(Playlist).filter_by(
+        id=playlist_id, user_id=current_user.id).first()
+    if not playlist:
+        db_sess.close()
+        return jsonify({'error': 'Плейлист не найден'}), 404
+
+    track = db_sess.query(Track).get(data['track_id'])
+    if not track:
+        db_sess.close()
+        return jsonify({'error': 'Трек не найден'}), 404
+
+    playlist.tracks.append(track)
+    db_sess.commit()
+    db_sess.close()
+
+    return jsonify({'ok': True})
+
+
+@app.route('/api/playlists/<int:playlist_id>', methods=['DELETE'])
+@login_required
+def remove_playlist(playlist_id):
+    db_sess = db_session.create_session()
+
+    playlist = db_sess.query(Playlist).filter_by(
+        id=playlist_id, user_id=current_user.id).first()
+
+    db_sess.delete(playlist)
+    db_sess.commit()
+    db_sess.close()
+
+    return jsonify({'ok': True})
+
+
+@app.route('/api/playlists/<int:playlist_id>/tracks/<int:track_id>', methods=['DELETE'])
+@login_required
+def remove_from_playlist(playlist_id, track_id):
+    db_sess = db_session.create_session()
+
+    playlist = db_sess.query(Playlist).filter_by(
+        id=playlist_id, user_id=current_user.id).first()
+    if not playlist:
+        db_sess.close()
+        return jsonify({'error': 'Плейлист не найден'}), 404
+
+    track = db_sess.query(Track).get(track_id)
+    if track in playlist.tracks:
+        playlist.tracks.remove(track)
+        db_sess.commit()
+    else:
+        db_sess.close()
+        return jsonify({'error': 'Трека нет в этом плейлисте'}), 404
+
+    db_sess.close()
+    return jsonify({'ok': True})
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -117,6 +206,12 @@ def login():
 def logout():
     logout_user()
     return redirect('/')
+
+
+@app.route('/playlists')
+@login_required
+def playlists_page():
+    return render_template('playlists.html')
 
 
 if __name__ == '__main__':
