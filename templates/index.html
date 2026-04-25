@@ -11,28 +11,78 @@
 <h3>Сейчас играет:</h3>
 <div id="current-track">—</div>
 
-<audio id="player" controls style="width: 300px;"></audio>
+<audio id="player" controls></audio>
 
 <script>
     fetch('/api/tracks')
         .then(response => response.json())
         .then(tracks => {
             const container = document.getElementById('track-list');
+            container.innerHTML = '';
             
-            tracks.forEach(track => {
-                const button = document.createElement('button');
-                button.textContent = `${track.title} - ${track.artist}`;
-                button.style.display = 'block';
-                button.style.margin = '5px';
-                button.style.padding = '10px';
-                button.onclick = () => {
+            for (let i = 0; i < tracks.length; i++) {
+                const track = tracks[i];
+                
+                const card = document.createElement('div');
+                card.style.border = '1px solid gray';
+                card.style.margin = '10px';
+                card.style.padding = '10px';
+                card.style.borderRadius = '5px';
+                
+                const title = document.createElement('strong');
+                title.textContent = track.title + ' - ' + track.artist;
+                card.appendChild(title);
+                card.appendChild(document.createElement('br'));
+                
+                const likeBtn = document.createElement('button');
+                if (track.user_liked) {
+                    likeBtn.textContent = '❤️ ' + track.likes;
+                    likeBtn.style.color = 'red';
+                } else {
+                    likeBtn.textContent = '🤍 ' + track.likes;
+                }
+                
+                likeBtn.onclick = function() {
+                    const logoutBtn = document.querySelector('a[href="/logout"]');
+    
+                    if (!logoutBtn) {
+                        er_mess = document.createElement('p');
+                        er_mess.textContent = 'Нужно войти, чтобы ставить лайки';
+                        er_mess.style.color = 'red';
+                        card.appendChild(er_mess);
+
+                        setTimeout(() => {
+                            er_mess.remove();
+                        }, 3000)
+                        return;
+                    }
+                    
+                    fetch('/api/rate', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({track_id: track.id})
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        }
+                    });
+                };
+                card.appendChild(likeBtn);
+                
+                const playBtn = document.createElement('button');
+                playBtn.textContent = ' ▶ Воспроизвести';
+                playBtn.onclick = function() {
                     const player = document.getElementById('player');
                     player.src = track.file_url;
                     player.play();
-                    document.getElementById('current-track').textContent = track.title;
+                    const current = document.getElementById('current-track');
+                    current.textContent = track.title;
                 };
-                container.appendChild(button);
-            });
+                card.appendChild(playBtn);
+                
+                container.appendChild(card);
+            }
         });
 </script>
 {% endblock %}

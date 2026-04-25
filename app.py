@@ -4,6 +4,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from data import db_session
 from data.users import User
 from data.tracks import Track
+from data.ratings import Rating
 from forms.user import RegisterForm, LoginForm
 
 app = Flask(__name__)
@@ -26,14 +27,49 @@ def api_tracks():
     tracks = db_sess.query(Track).all()
     result = []
     for t in tracks:
+        likes_count = db_sess.query(Rating).filter_by(track_id=t.id).count()
+
+        user_liked = False
+        if current_user.is_authenticated:
+            rating = db_sess.query(Rating).filter_by(
+                user_id=current_user.id, track_id=t.id).first()
+            if rating:
+                user_liked = True
+
         result.append({
             'id': t.id,
             'title': t.title,
             'artist': t.artist,
             'file_url': t.file_url,
-            'duration': t.duration
+            'duration': t.duration,
+            'likes': likes_count,
+            'user_liked': user_liked
         })
+    db_sess.close()
     return jsonify(result)
+
+
+@app.route('/api/rate', methods=['POST'])
+@login_required
+def rate_track():
+    data = request.get_json()
+    track_id = data['track_id']
+
+    db_sess = db_session.create_session()
+
+    old_rating = db_sess.query(Rating).filter_by(
+        user_id=current_user.id, track_id=track_id).first()
+    if old_rating:
+        db_sess.delete(old_rating)
+    else:
+        new_rating = Rating(user_id=current_user.id,
+                            track_id=track_id, value=1)
+        db_sess.add(new_rating)
+
+    db_sess.commit()
+    db_sess.close()
+
+    return jsonify({'ok': True})
 
 
 @app.route('/')
