@@ -44,9 +44,9 @@
                 
                 likeBtn.onclick = function() {
                     const logoutBtn = document.querySelector('a[href="/logout"]');
-    
+
                     if (!logoutBtn) {
-                        er_mess = document.createElement('p');
+                        const er_mess = document.createElement('p');
                         er_mess.textContent = 'Нужно войти, чтобы ставить лайки';
                         er_mess.style.color = 'red';
                         card.appendChild(er_mess);
@@ -57,10 +57,12 @@
                         return;
                     }
                     
+                    const newValue = track.user_liked ? 0 : 1;
+                    
                     fetch('/api/rate', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({track_id: track.id})
+                        body: JSON.stringify({track_id: track.id, value: newValue})
                     })
                     .then(response => {
                         if (response.ok) {
@@ -69,6 +71,44 @@
                     });
                 };
                 card.appendChild(likeBtn);
+
+                const dislikeBtn = document.createElement('button');
+                if (track.user_disliked) {
+                    dislikeBtn.textContent = '💔 ' + track.dislikes;
+                    dislikeBtn.style.color = 'blue';
+                } else {
+                    dislikeBtn.textContent = '🖤 ' + track.dislikes;
+                }
+
+                dislikeBtn.onclick = function() {
+                    const logoutBtn = document.querySelector('a[href="/logout"]');
+
+                    if (!logoutBtn) {
+                        const er_mess = document.createElement('p');
+                        er_mess.textContent = 'Нужно войти, чтобы ставить дизлайки';
+                        er_mess.style.color = 'red';
+                        card.appendChild(er_mess);
+
+                        setTimeout(() => {
+                            er_mess.remove();
+                        }, 3000)
+                        return;
+                    }
+                    
+                    const newValue = track.user_disliked ? 0 : -1;
+                    
+                    fetch('/api/rate', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({track_id: track.id, value: newValue})
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        }
+                    });
+                };
+                card.appendChild(dislikeBtn);
 
                 const playlistBtn = document.createElement('button');
                 playlistBtn.textContent = ' 📁 В плейлист';
