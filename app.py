@@ -18,35 +18,43 @@ login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = db_session.create_session()
-    return db_sess.get(User, user_id)
+    with db_session.create_session() as db_sess:
+        return db_sess.get(User, user_id)
 
 
 @app.route('/api/tracks')
 def api_tracks():
-    db_sess = db_session.create_session()
-    tracks = db_sess.query(Track).all()
-    result = []
-    for t in tracks:
-        likes_count = db_sess.query(Rating).filter_by(track_id=t.id).count()
+    with db_session.create_session() as db_sess:
+        tracks = db_sess.query(Track).all()
+        result = []
+        for t in tracks:
+            likes_count = db_sess.query(Rating).filter_by(
+                track_id=t.id, value=1).count()
+            dislikes_count = db_sess.query(Rating).filter_by(
+                track_id=t.id, value=-1).count()
 
-        user_liked = False
-        if current_user.is_authenticated:
-            rating = db_sess.query(Rating).filter_by(
-                user_id=current_user.id, track_id=t.id).first()
-            if rating:
-                user_liked = True
+            user_liked = False
+            user_disliked = False
+            if current_user.is_authenticated:
+                rating = db_sess.query(Rating).filter_by(
+                    user_id=current_user.id, track_id=t.id).first()
+                if rating:
+                    if rating.value == 1:
+                        user_liked = True
+                    elif rating.value == -1:
+                        user_disliked = True
 
-        result.append({
-            'id': t.id,
-            'title': t.title,
-            'artist': t.artist,
-            'file_url': t.file_url,
-            'duration': t.duration,
-            'likes': likes_count,
-            'user_liked': user_liked
-        })
-    db_sess.close()
+            result.append({
+                'id': t.id,
+                'title': t.title,
+                'artist': t.artist,
+                'file_url': t.file_url,
+                'duration': t.duration,
+                'likes': likes_count,
+                'dislikes': dislikes_count,
+                'user_liked': user_liked,
+                'user_disliked': user_disliked
+            })
     return jsonify(result)
 
 
@@ -55,20 +63,27 @@ def api_tracks():
 def rate_track():
     data = request.get_json()
     track_id = data['track_id']
+    value = data.get('value', 0)
 
-    db_sess = db_session.create_session()
+    if value not in [1, -1, 0]:
+        return jsonify({'error': 'value должен быть 1, -1 или 0'}), 400
 
-    old_rating = db_sess.query(Rating).filter_by(
-        user_id=current_user.id, track_id=track_id).first()
-    if old_rating:
-        db_sess.delete(old_rating)
-    else:
-        new_rating = Rating(user_id=current_user.id,
-                            track_id=track_id, value=1)
-        db_sess.add(new_rating)
+    with db_session.create_session() as db_sess:
+        existing = db_sess.query(Rating).filter_by(
+            user_id=current_user.id, track_id=track_id).first()
 
-    db_sess.commit()
-    db_sess.close()
+        if value == 0:
+            if existing:
+                db_sess.delete(existing)
+        else:
+            if existing:
+                existing.value = value
+            else:
+                new_rating = Rating(user_id=current_user.id,
+                                    track_id=track_id, value=value)
+                db_sess.add(new_rating)
+
+        db_sess.commit()
 
     return jsonify({'ok': True})
 
@@ -76,26 +91,22 @@ def rate_track():
 @app.route('/api/playlists')
 @login_required
 def get_playlists():
-    db_sess = db_session.create_session()
-    playlists = db_sess.query(Playlist).filter_by(
-        user_id=current_user.id).all()
-    db_sess.close()
-    return jsonify([{'id': p.id, 'name': p.name} for p in playlists])
+    with db_session.create_session() as db_sess:
+        playlists = db_sess.query(Playlist).filter_by(
+            user_id=current_user.id).all()
+        result = [{'id': p.id, 'name': p.name} for p in playlists]
+    return jsonify(result)
 
 
 @app.route('/api/playlists', methods=['POST'])
 @login_required
 def create_playlist():
     data = request.get_json()
-    db_sess = db_session.create_session()
-    playlist = Playlist(name=data['name'], user_id=current_user.id)
-    db_sess.add(playlist)
-    db_sess.commit()
-
-    result = {'id': playlist.id, 'name': playlist.name}
-
-    db_sess.close()
-
+    with db_session.create_session() as db_sess:
+        playlist = Playlist(name=data['name'], user_id=current_user.id)
+        db_sess.add(playlist)
+        db_sess.commit()
+        result = {'id': playlist.id, 'name': playlist.name}
     return jsonify(result)
 
 
@@ -103,22 +114,18 @@ def create_playlist():
 @login_required
 def add_to_playlist(playlist_id):
     data = request.get_json()
-    db_sess = db_session.create_session()
+    with db_session.create_session() as db_sess:
+        playlist = db_sess.query(Playlist).filter_by(
+            id=playlist_id, user_id=current_user.id).first()
+        if not playlist:
+            return jsonify({'error': 'Плейлист не найден'}), 404
 
-    playlist = db_sess.query(Playlist).filter_by(
-        id=playlist_id, user_id=current_user.id).first()
-    if not playlist:
-        db_sess.close()
-        return jsonify({'error': 'Плейлист не найден'}), 404
+        track = db_sess.query(Track).get(data['track_id'])
+        if not track:
+            return jsonify({'error': 'Трек не найден'}), 404
 
-    track = db_sess.query(Track).get(data['track_id'])
-    if not track:
-        db_sess.close()
-        return jsonify({'error': 'Трек не найден'}), 404
-
-    playlist.tracks.append(track)
-    db_sess.commit()
-    db_sess.close()
+        playlist.tracks.append(track)
+        db_sess.commit()
 
     return jsonify({'ok': True})
 
@@ -126,14 +133,11 @@ def add_to_playlist(playlist_id):
 @app.route('/api/playlists/<int:playlist_id>', methods=['DELETE'])
 @login_required
 def remove_playlist(playlist_id):
-    db_sess = db_session.create_session()
-
-    playlist = db_sess.query(Playlist).filter_by(
-        id=playlist_id, user_id=current_user.id).first()
-
-    db_sess.delete(playlist)
-    db_sess.commit()
-    db_sess.close()
+    with db_session.create_session() as db_sess:
+        playlist = db_sess.query(Playlist).filter_by(
+            id=playlist_id, user_id=current_user.id).first()
+        db_sess.delete(playlist)
+        db_sess.commit()
 
     return jsonify({'ok': True})
 
@@ -141,23 +145,19 @@ def remove_playlist(playlist_id):
 @app.route('/api/playlists/<int:playlist_id>/tracks/<int:track_id>', methods=['DELETE'])
 @login_required
 def remove_from_playlist(playlist_id, track_id):
-    db_sess = db_session.create_session()
+    with db_session.create_session() as db_sess:
+        playlist = db_sess.query(Playlist).filter_by(
+            id=playlist_id, user_id=current_user.id).first()
+        if not playlist:
+            return jsonify({'error': 'Плейлист не найден'}), 404
 
-    playlist = db_sess.query(Playlist).filter_by(
-        id=playlist_id, user_id=current_user.id).first()
-    if not playlist:
-        db_sess.close()
-        return jsonify({'error': 'Плейлист не найден'}), 404
+        track = db_sess.query(Track).get(track_id)
+        if track in playlist.tracks:
+            playlist.tracks.remove(track)
+            db_sess.commit()
+        else:
+            return jsonify({'error': 'Трека нет в этом плейлисте'}), 404
 
-    track = db_sess.query(Track).get(track_id)
-    if track in playlist.tracks:
-        playlist.tracks.remove(track)
-        db_sess.commit()
-    else:
-        db_sess.close()
-        return jsonify({'error': 'Трека нет в этом плейлисте'}), 404
-
-    db_sess.close()
     return jsonify({'ok': True})
 
 
@@ -173,14 +173,15 @@ def register():
         if form.password.data != form.password_again.data:
             return render_template('register.html', form=form, message="Пароли не совпадают")
 
-        db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template('register.html', form=form, message="Пользователь уже существует")
+        with db_session.create_session() as db_sess:
+            if db_sess.query(User).filter(User.email == form.email.data).first():
+                return render_template('register.html', form=form, message="Пользователь уже существует")
 
-        user = User(name=form.name.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db_sess.add(user)
-        db_sess.commit()
+            user = User(name=form.name.data, email=form.email.data)
+            user.set_password(form.password.data)
+            db_sess.add(user)
+            db_sess.commit()
+
         return redirect('/login')
 
     return render_template('register.html', form=form)
@@ -190,13 +191,13 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(
-            User.email == form.email.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
-            return redirect('/')
-        return render_template('login.html', form=form, message="Неверный email или пароль")
+        with db_session.create_session() as db_sess:
+            user = db_sess.query(User).filter(
+                User.email == form.email.data).first()
+            if user and user.check_password(form.password.data):
+                login_user(user, remember=form.remember_me.data)
+                return redirect('/')
+            return render_template('login.html', form=form, message="Неверный email или пароль")
 
     return render_template('login.html', form=form)
 
