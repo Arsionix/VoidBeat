@@ -57,6 +57,12 @@ function playTrack(track) {
     player.src = track.file_url;
     player.play();
     document.getElementById('current-track').textContent = track.title;
+
+    fetch(`/api/tracks/${track.id}/play`, {method: 'POST', headers: {'Content-Type': 'application/json'}})
+        .then(response => response.json())
+        .then(data => {
+            console.log(`Прослушиваний: ${data.plays_count}`);
+        });
 }
 
 loadTracks();

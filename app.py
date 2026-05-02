@@ -58,6 +58,22 @@ def api_tracks():
     return jsonify(result)
 
 
+@app.route('/api/tracks/<int:track_id>/play', methods=['POST'])
+@login_required
+def increment_plays(track_id):
+    with db_session.create_session() as db_sess:
+        track = db_sess.query(Track).get(track_id)
+        if not track:
+            return jsonify({'error': 'Трек не найден'}), 404
+
+        track.plays_count += 1
+        db_sess.commit()
+
+        plays_count = track.plays_count
+
+    return jsonify({'ok': True, 'plays_count': plays_count})
+
+
 @app.route('/api/rate', methods=['POST'])
 @login_required
 def rate_track():
