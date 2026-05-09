@@ -1,9 +1,21 @@
+let currentSearchQuery = '';
+
 function loadTracks() {
-    fetch('/api/tracks')
+    let url = '/api/tracks';
+    if (currentSearchQuery) {
+        url += `?q=${encodeURIComponent(currentSearchQuery)}`;
+    }
+    
+    fetch(url)
         .then(response => response.json())
         .then(tracks => {
             const container = document.getElementById('track-list');
             container.innerHTML = '';
+            
+            if (tracks.length === 0) {
+                container.innerHTML = '<p>Ничего не найдено</p>';
+                return;
+            }
             
             for (let i = 0; i < tracks.length; i++) {
                 const track = tracks[i];
@@ -65,4 +77,35 @@ function playTrack(track) {
         });
 }
 
+function setupSearch() {
+    const searchBtn = document.getElementById('search-btn');
+    const clearBtn = document.getElementById('clear-search');
+    const searchInput = document.getElementById('search-input');
+    
+    if (searchBtn) {
+        searchBtn.onclick = function() {
+            currentSearchQuery = searchInput.value;
+            loadTracks();
+        };
+    }
+    
+    if (clearBtn) {
+        clearBtn.onclick = function() {
+            searchInput.value = '';
+            currentSearchQuery = '';
+            loadTracks();
+        };
+    }
+    
+    if (searchInput) {
+        searchInput.onkeypress = function(e) {
+            if (e.key === 'Enter') {
+                currentSearchQuery = searchInput.value;
+                loadTracks();
+            }
+        };
+    }
+}
+
 loadTracks();
+setupSearch();

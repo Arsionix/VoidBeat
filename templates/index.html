@@ -2,15 +2,19 @@
 
 {% block content %}
 <h1>VoidBeat</h1>
-<h2>Список треков</h2>
 
+<div style="margin: 20px 0;">
+    <input type="text" id="search-input" placeholder="Поиск по названию или исполнителю..." style="width: 300px; padding: 8px;">
+    <button id="search-btn">Найти</button>
+    <button id="clear-search">Очистить</button>
+</div>
+
+<h2>Список треков</h2>
 <div id="track-list"></div>
 
 <hr>
-
 <h3>Сейчас играет:</h3>
 <div id="current-track">—</div>
-
 <audio id="player" controls></audio>
 
 <script src="{{ url_for('static', filename='js/likes.js') }}"></script>
