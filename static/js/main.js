@@ -1,12 +1,18 @@
 let currentSearchQuery = '';
+let currentMode = 'all';
 
 let currentPage = 1;
 let totalPages = 1;
 
 function loadTracks() {
     let url = `/api/tracks?page=${currentPage}&per_page=20`;
+    
     if (currentSearchQuery) {
         url += `&q=${encodeURIComponent(currentSearchQuery)}`;
+    }
+    
+    if (currentMode && currentMode !== 'all') {
+        url += `&mode=${currentMode}`;
     }
     
     fetch(url)
@@ -154,5 +160,21 @@ function addPaginationButtons() {
     container.appendChild(paginationDiv);
 }
 
+function setupModeFilter() {
+    const modeBtns = document.querySelectorAll('.mode-btn');
+    
+    modeBtns.forEach(btn => {
+        btn.onclick = function() {
+            modeBtns.forEach(b => b.style.backgroundColor = '');
+            this.style.backgroundColor = '#ddd';
+            
+            currentMode = this.dataset.mode;
+            currentPage = 1;
+            loadTracks();
+        };
+    });
+}
+
 loadTracks();
 setupSearch();
+setupModeFilter();
