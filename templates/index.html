@@ -16,6 +16,27 @@
     <button id="clear-search">Очистить</button>
 </div>
 
+<div style="margin: 20px 0; padding: 15px; border: 1px solid #ddd;">
+    <h3>Pomodoro</h3>
+    <div>
+        <span id="timerMode" style="font-size: 14px;">Работа</span>
+        <div>
+            <span id="timer" style="font-size: 32px; font-family: monospace;">25:00</span>
+        </div>
+    </div>
+    <div style="margin-top: 10px;">
+        <button onclick="pomodoroStart()">Старт</button>
+        <button onclick="pomodoroPause()">Пауза</button>
+        <button onclick="pomodoroReset()">Сброс</button>
+    </div>
+</div>
+
+<div id="pomodoro-notification" style="display: none; margin: 10px 0; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9;">
+    <p id="notification-message"></p>
+    <button onclick="pomodoroConfirm()" id="notification-ok">OK</button>
+    <button onclick="pomodoroCancel()" id="notification-cancel">Отмена</button>
+</div>
+
 <h2>Список треков</h2>
 <div id="track-list"></div>
 
@@ -24,6 +45,7 @@
 <div id="current-track">—</div>
 <audio id="player" controls></audio>
 
+<script src="{{ url_for('static', filename='js/pomodoro.js') }}"></script>
 <script src="{{ url_for('static', filename='js/likes.js') }}"></script>
 <script src="{{ url_for('static', filename='js/playlists.js') }}"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
