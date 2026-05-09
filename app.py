@@ -1,4 +1,5 @@
 import os
+import uuid
 from flask import Flask, render_template, redirect, request, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from data import db_session
@@ -7,9 +8,12 @@ from data.tracks import Track
 from data.ratings import Rating
 from data.playlists import Playlist
 from forms.user import RegisterForm, LoginForm
+from forms.upload_form import UploadTrackForm
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_123')
+app.config['UPLOAD_FOLDER'] = 'static/music'
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -36,7 +40,7 @@ def api_tracks():
         per_page = 20
 
     with db_session.create_session() as db_sess:
-        query = db_sess.query(Track)
+        query = db_sess.query(Track).filter_by(is_approved=True)
 
         if search_query:
             query = query.filter(
@@ -262,6 +266,95 @@ def logout():
 @login_required
 def playlists_page():
     return render_template('playlists.html')
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+@login_required
+def upload_track():
+    form = UploadTrackForm()
+    if form.validate_on_submit():
+        file = form.audio_file.data
+        if file:
+            filename = secure_filename(file.filename)
+            unique_name = str(uuid.uuid4()) + '_' + filename
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
+
+            with db_session.create_session() as db_sess:
+                track = Track(
+                    title=form.title.data,
+                    artist=form.artist.data,
+                    file_url='/static/music/' + unique_name,
+                    mode=form.mode.data,
+                    is_approved=False,
+                    uploaded_by=current_user.id
+                )
+                db_sess.add(track)
+                db_sess.commit()
+
+            return redirect('/')
+
+    return render_template('upload.html', form=form)
+
+
+@app.route('/admin')
+@login_required
+def admin_panel():
+    if current_user.name != 'arsionix':
+        return 'Доступ запрещен', 403
+
+    with db_session.create_session() as db_sess:
+        tracks = db_sess.query(Track).filter_by(is_approved=False).all()
+
+    html = '<h1>Модерация треков</h1>'
+    for t in tracks:
+        html += f'''
+        <div style="border:1px solid #ccc; margin:10px; padding:10px">
+            <b>{t.title}</b> - {t.artist} (режим: {t.mode})<br>
+            <audio src="{t.file_url}" controls></audio><br>
+            <a href="/approve/{t.id}">Одобрить</a> | 
+            <a href="/reject/{t.id}">Отклонить</a>
+        </div>
+        '''
+
+    if not tracks:
+        html += '<p>Нет треков на модерации</p>'
+
+    return html
+
+
+@app.route('/approve/<int:track_id>')
+@login_required
+def approve_track(track_id):
+    if current_user.name != 'arsionix':
+        return 'Доступ запрещен', 403
+
+    with db_session.create_session() as db_sess:
+        track = db_sess.query(Track).get(track_id)
+        if track:
+            track.is_approved = True
+            db_sess.commit()
+
+    return redirect('/admin')
+
+
+@app.route('/reject/<int:track_id>')
+@login_required
+def reject_track(track_id):
+    if current_user.name != 'arsionix':
+        return 'Доступ запрещен', 403
+
+    with db_session.create_session() as db_sess:
+        track = db_sess.query(Track).get(track_id)
+        if track:
+            if track.file_url:
+                filepath = track.file_url.replace('/static/', 'static/')
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+            db_sess.delete(track)
+            db_sess.commit()
+
+    return redirect('/admin')
 
 
 if __name__ == '__main__':

@@ -21,7 +21,9 @@ def load_tracks():
                 file_url=file_url,
                 mode=mode,
                 duration=duration,
-                plays_count=0
+                plays_count=0,
+                is_approved=True,
+                uploaded_by=1
             )
             session.add(track)
 
