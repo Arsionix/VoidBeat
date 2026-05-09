@@ -27,6 +27,14 @@ def api_tracks():
     search_query = request.args.get('q', '')
     mode_filter = request.args.get('mode')
 
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+
+    if page < 1:
+        page = 1
+    if per_page < 1 or per_page > 100:
+        per_page = 20
+
     with db_session.create_session() as db_sess:
         query = db_sess.query(Track)
 
@@ -39,7 +47,9 @@ def api_tracks():
         if mode_filter and mode_filter in ['flow', 'deep', 'reset']:
             query = query.filter(Track.mode == mode_filter)
 
-        tracks = query.all()
+        total = query.count()
+
+        tracks = query.offset((page - 1) * per_page).limit(per_page).all()
 
         result = []
         for t in tracks:
@@ -71,7 +81,14 @@ def api_tracks():
                 'user_liked': user_liked,
                 'user_disliked': user_disliked
             })
-    return jsonify(result)
+
+    return jsonify({
+        'tracks': result,
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': (total + per_page - 1) // per_page
+    })
 
 
 @app.route('/api/tracks/<int:track_id>/play', methods=['POST'])
