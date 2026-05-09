@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Загрузить трек</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    
+    <p>
+        {{ form.title.label }}<br>
+        {{ form.title(size=40) }}
+    </p>
+    
+    <p>
+        {{ form.artist.label }}<br>
+        {{ form.artist(size=40) }}
+    </p>
+    
+    <p>
+        {{ form.mode.label }}<br>
+        {{ form.mode() }}
+    </p>
+    
+    <p>
+        {{ form.audio_file.label }}<br>
+        {{ form.audio_file() }}
+    </p>
+    
+    <p>
+        {{ form.submit() }}
+    </p>
+</form>
+{% endblock %}

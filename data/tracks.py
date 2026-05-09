@@ -16,4 +16,8 @@ class Track(SqlAlchemyBase, SerializerMixin):
     duration = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     plays_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)
 
+    is_approved = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    uploaded_by = sqlalchemy.Column(
+        sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'), nullable=True)
+
     ratings = orm.relationship("Rating", back_populates="track")
