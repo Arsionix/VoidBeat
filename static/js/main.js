@@ -1,14 +1,21 @@
 let currentSearchQuery = '';
 
+let currentPage = 1;
+let totalPages = 1;
+
 function loadTracks() {
-    let url = '/api/tracks';
+    let url = `/api/tracks?page=${currentPage}&per_page=20`;
     if (currentSearchQuery) {
-        url += `?q=${encodeURIComponent(currentSearchQuery)}`;
+        url += `&q=${encodeURIComponent(currentSearchQuery)}`;
     }
     
     fetch(url)
         .then(response => response.json())
-        .then(tracks => {
+        .then(data => {
+            const tracks = data.tracks;
+            totalPages = data.total_pages;
+            currentPage = data.page;
+            
             const container = document.getElementById('track-list');
             container.innerHTML = '';
             
@@ -22,6 +29,8 @@ function loadTracks() {
                 const card = createTrackCard(track);
                 container.appendChild(card);
             }
+            
+            addPaginationButtons();
         });
 }
 
@@ -105,6 +114,44 @@ function setupSearch() {
             }
         };
     }
+}
+
+function addPaginationButtons() {
+    const container = document.getElementById('track-list');
+    const paginationDiv = document.createElement('div');
+    paginationDiv.style.marginTop = '20px';
+    paginationDiv.style.display = 'flex';
+    paginationDiv.style.gap = '10px';
+    paginationDiv.style.justifyContent = 'center';
+    
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = 'Предыдущая';
+    prevBtn.disabled = (currentPage <= 1);
+    prevBtn.onclick = () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadTracks();
+        }
+    };
+    paginationDiv.appendChild(prevBtn);
+    
+    const pageInfo = document.createElement('span');
+    pageInfo.textContent = `Страница ${currentPage} из ${totalPages}`;
+    pageInfo.style.padding = '0 10px';
+    paginationDiv.appendChild(pageInfo);
+    
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Следующая';
+    nextBtn.disabled = (currentPage >= totalPages);
+    nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadTracks();
+        }
+    };
+    paginationDiv.appendChild(nextBtn);
+    
+    container.appendChild(paginationDiv);
 }
 
 loadTracks();
