@@ -24,8 +24,23 @@ def load_user(user_id):
 
 @app.route('/api/tracks')
 def api_tracks():
+    search_query = request.args.get('q', '')
+    mode_filter = request.args.get('mode')
+
     with db_session.create_session() as db_sess:
-        tracks = db_sess.query(Track).all()
+        query = db_sess.query(Track)
+
+        if search_query:
+            query = query.filter(
+                (Track.title.ilike(f'%{search_query}%')) |
+                (Track.artist.ilike(f'%{search_query}%'))
+            )
+
+        if mode_filter and mode_filter in ['flow', 'deep', 'reset']:
+            query = query.filter(Track.mode == mode_filter)
+
+        tracks = query.all()
+
         result = []
         for t in tracks:
             likes_count = db_sess.query(Rating).filter_by(
@@ -52,6 +67,7 @@ def api_tracks():
                 'duration': t.duration,
                 'likes': likes_count,
                 'dislikes': dislikes_count,
+                'plays_count': t.plays_count,
                 'user_liked': user_liked,
                 'user_disliked': user_disliked
             })
