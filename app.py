@@ -228,7 +228,9 @@ def register():
 
         with db_session.create_session() as db_sess:
             if db_sess.query(User).filter(User.email == form.email.data).first():
-                return render_template('register.html', form=form, message="Пользователь уже существует")
+                return render_template('register.html', form=form, message="Почта пользователя уже существует")
+            if db_sess.query(User).filter(User.name == form.name.data).first():
+                return render_template('register.html', form=form, message="Имя пользователя уже существует")
 
             user = User(name=form.name.data, email=form.email.data)
             user.set_password(form.password.data)
@@ -300,7 +302,7 @@ def upload_track():
 @app.route('/admin')
 @login_required
 def admin_panel():
-    if current_user.name != 'arsionix':
+    if not current_user.is_admin:
         return 'Доступ запрещен', 403
 
     with db_session.create_session() as db_sess:
@@ -326,7 +328,7 @@ def admin_panel():
 @app.route('/approve/<int:track_id>')
 @login_required
 def approve_track(track_id):
-    if current_user.name != 'arsionix':
+    if not current_user.is_admin:
         return 'Доступ запрещен', 403
 
     with db_session.create_session() as db_sess:
@@ -341,7 +343,7 @@ def approve_track(track_id):
 @app.route('/reject/<int:track_id>')
 @login_required
 def reject_track(track_id):
-    if current_user.name != 'arsionix':
+    if not current_user.is_admin:
         return 'Доступ запрещен', 403
 
     with db_session.create_session() as db_sess:
