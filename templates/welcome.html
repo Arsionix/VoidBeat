@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row min-vh-100 align-items-center text-center">
+        <div class="col-12">
+            <h1 class="display-1 fw-bold mb-4">VoidBeat</h1>
+            <p class="lead mb-4">Музыка, которая поможет сосредоточиться</p>
+            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                <a href="/register" class="btn btn-primary btn-lg px-4">Начать слушать</a>
+                <a href="/login" class="btn btn-outline-secondary btn-lg px-4">Уже есть аккаунт</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-center py-5 rounded-4 mb-5">
+        <div class="col-12 mb-4">
+            <h2>Выбери свой режим</h2>
+            <p class="text-muted">Три уникальных состояния для продуктивной работы</p>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="p-4">
+                <div class="display-1 mb-3">🌊</div>
+                <h3>Flow</h3>
+                <p class="text-muted">Для плавной работы и творчества</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="p-4">
+                <div class="display-1 mb-3">🧠</div>
+                <h3>Deep</h3>
+                <p class="text-muted">Для глубокой концентрации</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="p-4">
+                <div class="display-1 mb-3">🔄</div>
+                <h3>Reset</h3>
+                <p class="text-muted">Для перезагрузки и отдыха</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-center py-5 mb-5">
+        <div class="col-12 mb-4">
+            <h2>Всё для твоего фокуса</h2>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="display-6 mb-2">🎵</div>
+            <h5>Плейлисты</h5>
+            <p class="small text-muted">Собирай любимые треки</p>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="display-6 mb-2">❤️</div>
+            <h5>Оценки</h5>
+            <p class="small text-muted">Помогай сервису стать лучше</p>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="display-6 mb-2">⏱️</div>
+            <h5>Pomodoro</h5>
+            <p class="small text-muted">Таймер для работы и отдыха</p>
+        </div>
+    </div>
+
+    <footer class="py-4 text-center text-muted border-top">
+        <small>VoidBeat — музыка для кода</small>
+    </footer>
+</div>
+
+{% endblock %}
