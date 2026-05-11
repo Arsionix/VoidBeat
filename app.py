@@ -216,7 +216,10 @@ def remove_from_playlist(playlist_id, track_id):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    if current_user.is_authenticated:
+        return render_template('main.html', active_page='home')
+    else:
+        return render_template('welcome.html', active_page='home')
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -239,7 +242,7 @@ def register():
 
         return redirect('/login')
 
-    return render_template('register.html', form=form)
+    return render_template('register.html', form=form, active_page='register')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -254,7 +257,7 @@ def login():
                 return redirect('/')
             return render_template('login.html', form=form, message="Неверный email или пароль")
 
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form, active_page='login')
 
 
 @app.route('/logout')
@@ -267,7 +270,7 @@ def logout():
 @app.route('/playlists')
 @login_required
 def playlists_page():
-    return render_template('playlists.html')
+    return render_template('playlists.html', active_page='playlists')
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -296,7 +299,7 @@ def upload_track():
 
             return redirect('/')
 
-    return render_template('upload.html', form=form)
+    return render_template('upload.html', form=form, active_page='upload')
 
 
 @app.route('/admin')
