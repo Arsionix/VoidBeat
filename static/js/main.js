@@ -165,8 +165,8 @@ function setupModeFilter() {
     
     modeBtns.forEach(btn => {
         btn.onclick = function() {
-            modeBtns.forEach(b => b.style.backgroundColor = '');
-            this.style.backgroundColor = '#ddd';
+            modeBtns.forEach(b => b.style.color = '');
+            this.style.color = '#000000';
             
             currentMode = this.dataset.mode;
             currentPage = 1;
