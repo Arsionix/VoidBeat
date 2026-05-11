@@ -1,14 +1,69 @@
 {% extends "base.html" %}
+
 {% block content %}
-<h2>Вход</h2>
-<form method="post">
-    {{ form.hidden_tag() }}
-    <p>{{ form.email.label }}<br>{{ form.email(size=32) }}</p>
-    <p>{{ form.password.label }}<br>{{ form.password(size=32) }}</p>
-    <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
-    <p>{{ form.submit() }}</p>
-    {% if message %}
-        <p style="color: red;">{{ message }}</p>
-    {% endif %}
-</form>
+<div class="container">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card bg-dark text-white border-secondary">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">Вход</h2>
+                    
+                    {% if message %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control bg-secondary text-white border-secondary") }}
+                            {% for error in form.email.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control bg-secondary text-white border-secondary") }}
+                            {% for error in form.password.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.remember_me(class="form-check-input") }}
+                            {{ form.remember_me.label(class="form-check-label") }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success w-100 mb-3">Войти</button>
+                        
+                        <div class="text-center">
+                            <small>Нет аккаунта? <a href="/register" class="text-success">Зарегистрироваться</a></small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        background-color: #6c757d;
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    }
+    
+    .bg-secondary {
+        background-color: #2d2d2d !important;
+    }
+    
+    .card {
+        background-color: #1e1e1e !important;
+        border-radius: 12px;
+    }
+</style>
 {% endblock %}

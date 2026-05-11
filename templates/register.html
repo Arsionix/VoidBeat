@@ -1,15 +1,80 @@
 {% extends "base.html" %}
+
 {% block content %}
-<h2>Регистрация</h2>
-<form method="post">
-    {{ form.hidden_tag() }}
-    <p>{{ form.email.label }}<br>{{ form.email(size=32) }}</p>
-    <p>{{ form.name.label }}<br>{{ form.name(size=32) }}</p>
-    <p>{{ form.password.label }}<br>{{ form.password(size=32) }}</p>
-    <p>{{ form.password_again.label }}<br>{{ form.password_again(size=32) }}</p>
-    <p>{{ form.submit() }}</p>
-    {% if message %}
-        <p style="color: red;">{{ message }}</p>
-    {% endif %}
-</form>
+<div class="container">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card bg-dark text-white border-secondary">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">Регистрация</h2>
+                    
+                    {% if message %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control bg-secondary text-white border-secondary") }}
+                            {% for error in form.name.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control bg-secondary text-white border-secondary") }}
+                            {% for error in form.email.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control bg-secondary text-white border-secondary") }}
+                            {% for error in form.password.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.password_again.label(class="form-label") }}
+                            {{ form.password_again(class="form-control bg-secondary text-white border-secondary") }}
+                            {% for error in form.password_again.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success w-100 mb-3">Зарегистрироваться</button>
+                        
+                        <div class="text-center">
+                            <small>Уже есть аккаунт? <a href="/login" class="text-success">Войти</a></small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        background-color: #6c757d;
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    }
+    
+    .bg-secondary {
+        background-color: #2d2d2d !important;
+    }
+    
+    .card {
+        background-color: #1e1e1e !important;
+        border-radius: 12px;
+    }
+</style>
 {% endblock %}

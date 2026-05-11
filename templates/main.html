@@ -1,49 +1,42 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>VoidBeat</h1>
-
-<div style="margin: 20px 0;">
-    <button class="mode-btn" data-mode="all">Все</button>
-    <button class="mode-btn" data-mode="flow">Flow</button>
-    <button class="mode-btn" data-mode="deep">Deep</button>
-    <button class="mode-btn" data-mode="reset">Reset</button>
-</div>
-
-<div style="margin: 20px 0;">
-    <input type="text" id="search-input" placeholder="Поиск по названию или исполнителю..." style="width: 300px; padding: 8px;">
-    <button id="search-btn">Найти</button>
-    <button id="clear-search">Очистить</button>
-</div>
-
-<div style="margin: 20px 0; padding: 15px; border: 1px solid #ddd;">
-    <h3>Pomodoro</h3>
-    <div>
-        <span id="timerMode" style="font-size: 14px;">Работа</span>
-        <div>
-            <span id="timer" style="font-size: 32px; font-family: monospace;">25:00</span>
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <div class="btn-group">
+            <button class="btn btn-outline-light mode-btn" data-mode="all">Все</button>
+            <button class="btn btn-outline-light mode-btn" data-mode="flow">Flow</button>
+            <button class="btn btn-outline-light mode-btn" data-mode="deep">Deep</button>
+            <button class="btn btn-outline-light mode-btn" data-mode="reset">Reset</button>
         </div>
     </div>
-    <div style="margin-top: 10px;">
-        <button onclick="pomodoroStart()">Старт</button>
-        <button onclick="pomodoroPause()">Пауза</button>
-        <button onclick="pomodoroReset()">Сброс</button>
+
+    <div id="track-list"></div>
+</div>
+
+<audio id="player" controls></audio>
+
+<div class="fixed-bottom bg-dark text-white p-2">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <strong>Сейчас играет:</strong> <span id="current-track">—</span>
+            </div>
+            <div class="col-md-4 text-center">
+                <button id="pomodoro-start" onclick="pomodoroStart()" class="btn btn-sm btn-outline-light">Старт</button>
+                <button id="pomodoro-pause" onclick="pomodoroPause()" class="btn btn-sm btn-outline-light">Пауза</button>
+                <button id="pomodoro-reset" onclick="pomodoroReset()" class="btn btn-sm btn-outline-light">Сброс</button>
+                <div><span id="timer-mode">Работа</span>: <span id="timer">25:00</span></div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div id="pomodoro-notification" style="display: none; margin: 10px 0; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9;">
+<div id="pomodoro-notification" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#1E1E1E; color:white; padding:20px; border-radius:10px; z-index:1000;">
     <p id="notification-message"></p>
-    <button onclick="pomodoroConfirm()" id="notification-ok">OK</button>
-    <button onclick="pomodoroCancel()" id="notification-cancel">Отмена</button>
+    <button id="notification-confirm" onclick="pomodoroConfirm()" class="btn btn-success btn-sm">Да</button>
+    <button id="notification-cancel" onclick="pomodoroCancel()" class="btn btn-danger btn-sm">Нет</button>
 </div>
-
-<h2>Список треков</h2>
-<div id="track-list"></div>
-
-<hr>
-<h3>Сейчас играет:</h3>
-<div id="current-track">—</div>
-<audio id="player" controls></audio>
 
 <script src="{{ url_for('static', filename='js/pomodoro.js') }}"></script>
 <script src="{{ url_for('static', filename='js/likes.js') }}"></script>

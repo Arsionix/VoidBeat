@@ -1,0 +1,45 @@
+body {
+    background-color: #121212;
+    color: #E0E0E0;
+}
+
+.navbar {
+    background-color: #1E1E1E !important;
+}
+
+.mode-btn[data-mode="flow"] {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.mode-btn[data-mode="deep"] {
+    background-color: #1565C0;
+    border-color: #1565C0;
+}
+
+.mode-btn[data-mode="reset"] {
+    background-color: #FF9800;
+    border-color: #FF9800;
+}
+
+.mode-btn[data-mode="all"] {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+#track-list > div {
+    background-color: #1E1E1E;
+    border: 1px solid #2D2D2D;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding: 10px;
+}
+
+.fixed-bottom {
+    background-color: #1E1E1E !important;
+    border-top: 1px solid #2D2D2D;
+}
+
+#pomodoro-start { background-color: #4CAF50; border-color: #4CAF50; }
+#pomodoro-pause { background-color: #FF9800; border-color: #FF9800; }
+#pomodoro-reset { background-color: #dc3545; border-color: #dc3545; }
