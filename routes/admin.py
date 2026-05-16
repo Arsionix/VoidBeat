@@ -16,21 +16,7 @@ def admin_panel():
     with db_session.create_session() as db_sess:
         tracks = db_sess.query(Track).filter_by(is_approved=False).all()
 
-    html = '<h1>Модерация треков</h1>'
-    for t in tracks:
-        html += f'''
-        <div style="border:1px solid #ccc; margin:10px; padding:10px">
-            <b>{t.title}</b> - {t.artist} (режим: {t.mode})<br>
-            <audio src="{t.file_url}" controls></audio><br>
-            <a href="/approve/{t.id}">Одобрить</a> | 
-            <a href="/reject/{t.id}">Отклонить</a>
-        </div>
-        '''
-
-    if not tracks:
-        html += '<p>Нет треков на модерации</p>'
-
-    return html
+    return render_template('admin.html', tracks=tracks)
 
 
 @bp.route('/approve/<int:track_id>')
@@ -45,7 +31,7 @@ def approve_track(track_id):
             track.is_approved = True
             db_sess.commit()
 
-    return redirect('/admin')
+    return redirect(url_for('admin.admin_panel'))
 
 
 @bp.route('/reject/<int:track_id>')
@@ -64,4 +50,4 @@ def reject_track(track_id):
             db_sess.delete(track)
             db_sess.commit()
 
-    return redirect('/admin')
+    return redirect(url_for('admin.admin_panel'))

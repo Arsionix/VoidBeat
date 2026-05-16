@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Модерация треков</h1>
+
+{% if tracks %}
+    {% for track in tracks %}
+    <div style="border:1px solid #ccc; margin:10px; padding:10px">
+        <b>{{ track.title }}</b> - {{ track.artist }} (режим: {{ track.mode }})<br>
+        <audio src="{{ track.file_url }}" controls></audio><br>
+        <a href="{{ url_for('admin.approve_track', track_id=track.id) }}">Одобрить</a> | 
+        <a href="{{ url_for('admin.reject_track', track_id=track.id) }}" onclick="return confirm('Удалить?')">Отклонить</a>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>Нет треков на модерации</p>
+{% endif %}
+{% endblock %}
