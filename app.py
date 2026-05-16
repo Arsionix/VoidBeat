@@ -6,12 +6,22 @@ from data.users import User
 from routes import api, auth, main, upload, admin
 
 
+def init_database():
+    db_path = "db"
+    if not os.path.exists(db_path):
+        os.makedirs(db_path)
+        print(f"Создана папка: {db_path}")
+
+    db_session.global_init("db/voidbeat.db")
+    print("База данных и таблицы готовы")
+
+
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_123')
     app.config['UPLOAD_FOLDER'] = 'static/music'
 
-    db_session.global_init("db/voidbeat.db")
+    init_database()
 
     login_manager = LoginManager()
     login_manager.init_app(app)
