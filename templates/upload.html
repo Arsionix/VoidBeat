@@ -1,33 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Загрузить трек</h2>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Загрузить трек</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.artist.label(class="form-label") }}
+                            {{ form.artist(class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.mode.label(class="form-label") }}
+                            {{ form.mode(class="form-select") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.audio_file.label(class="form-label") }}
+                            {{ form.audio_file(class="form-control") }}
+                            <small class="text-muted">MP3 (макс. 20MB)</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            Загрузить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<form method="POST" enctype="multipart/form-data">
-    {{ form.hidden_tag() }}
-    
-    <p>
-        {{ form.title.label }}<br>
-        {{ form.title(size=40) }}
-    </p>
-    
-    <p>
-        {{ form.artist.label }}<br>
-        {{ form.artist(size=40) }}
-    </p>
-    
-    <p>
-        {{ form.mode.label }}<br>
-        {{ form.mode() }}
-    </p>
-    
-    <p>
-        {{ form.audio_file.label }}<br>
-        {{ form.audio_file() }}
-    </p>
-    
-    <p>
-        {{ form.submit() }}
-    </p>
-</form>
 {% endblock %}
