@@ -71,6 +71,6 @@ cd VoidBeat
 
 pip install -r requirements.txt
 
-python app.py
+python main.py
 
 http://localhost:5000
