@@ -165,6 +165,29 @@ def add_to_playlist(playlist_id):
     return jsonify({'ok': True})
 
 
+@bp.route('/playlists/<int:playlist_id>/tracks', methods=['GET'])
+@login_required
+def get_playlist_tracks(playlist_id):
+    with db_session.create_session() as db_sess:
+        playlist = db_sess.query(Playlist).filter_by(
+            id=playlist_id, user_id=current_user.id).first()
+
+        if not playlist:
+            return jsonify({'error': 'Плейлист не найден'}), 404
+
+        tracks_data = []
+        for track in playlist.tracks:
+            tracks_data.append({
+                'id': track.id,
+                'title': track.title,
+                'artist': track.artist,
+                'file_url': track.file_url,
+                'plays_count': track.plays_count
+            })
+
+        return jsonify(tracks_data)
+
+
 @bp.route('/playlists/<int:playlist_id>', methods=['DELETE'])
 @login_required
 def remove_playlist(playlist_id):
